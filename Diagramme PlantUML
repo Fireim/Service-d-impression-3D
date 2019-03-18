@@ -1,0 +1,90 @@
+Usecase
+
+%%plantuml --jar
+@startuml
+
+(reparer) as "Réparer une pièce cassée"
+(envoyer) as "Envoyer forme/Dimension"
+(imprimer) as "Imprimer en 3D"
+rectangle "Ma partie" {
+(trancher) as "Trancher (Générer G-Code)"
+}
+
+actor Sculpteo
+actor Imprimante_3D as imprimante
+actor Client_internaute as client
+
+client -> reparer
+reparer -down.> envoyer: << include >>
+reparer -right.> imprimer: << include >>
+imprimer -up.> trancher: << include >>
+Sculpteo -left--> imprimer
+imprimante <|-- Sculpteo
+
+@enduml
+
+
+Deploy
+
+%%plantuml --jar
+@startuml
+
+node serveur_Application {
+    database Piece
+    component Apache {
+        artifact "piece\nlongueur\nlargeur\ndiametre" as dimensions
+        component socket_write << php >> as socket
+        component Affichage{
+            component "Processing.js" as processing
+        }
+    }
+    dimensions -> Affichage
+    Affichage -> socket
+    Piece -> dimensions
+    rectangle "Ma partie" {
+    package Trancheur << Qt >> {
+        component QNetworkAccessManager as network
+        component Openscad as openscad
+        artifact STL as stl
+        artifact G_Code as gcode
+        component Slic3r as slicer
+    }
+    }
+    socket -down--> network
+    network -> openscad
+    openscad -> stl
+    stl -> slicer
+    slicer -down--> gcode
+    package Pilote << Qt >> {
+        component QFile as qfile
+        folder "initialisation\npalpage\ndecoupe" as envoi_G_Code
+        component QSerialPort as qserialport
+    }
+    gcode -down--> qfile
+    qfile -> envoi_G_Code
+    envoi_G_Code -> qserialport
+}
+
+node imprimante3D {
+    node control_board {
+        node arduinoMega2560 {
+            component Marlin
+        }
+        node ramp1.4 as ramp
+        Marlin -left--> ramp
+    }
+    qserialport -down--> Marlin
+    node plateau_chauffant as plateau
+    node sonde_temperature as sonde
+    node extruder
+    node moteur_pas_a_pas as moteur
+    ramp -down--> moteur
+    ramp -down--> extruder
+    ramp -down--> sonde
+    ramp -left--> plateau
+    plateau *-down--> sonde
+    extruder *-left--> sonde
+}
+
+@enduml
+
