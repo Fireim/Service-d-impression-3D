@@ -1,0 +1,214 @@
+#include "reception.h"
+
+Reception::Reception(QObject *parent) :
+   QObject(parent)
+{
+   socket = new QUdpSocket(this);
+
+   socket->bind(QHostAddress::LocalHost, 1234);
+   connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
+}
+
+void Reception::Message()
+{
+   //QByteArray Data;
+   //Data.append("echo shape,cube,param1,2,param2,3,param3,4, | nc -vv -u localhost 1234");
+
+   //socket->writeDatagram(Data, QHostAddress::LocalHost, 1234);
+
+}
+
+void Reception::readyRead()
+{
+   buffer.resize(socket->pendingDatagramSize());
+   socket->readDatagram(buffer.data(), buffer.size());
+   qDebug() << "Message: " << buffer;
+
+   Info();
+}
+
+void Reception::Info()
+{
+   message = buffer;
+
+   if(message != "X")
+   {
+       list = message.split(",");
+
+       shape = list[0];
+
+       if (shape == "cube")
+       {
+           param1 = list[1];
+           param2 = list[2];
+           param3 = list[3];
+           qDebug() << shape << " " << param1 << " " << param2 << " " << param3 << endl;
+           CreationScadCube();
+       }
+       if (shape == "sphere")
+       {
+           param1 = list[1];
+           qDebug() << shape << " " << param1 << endl;
+           CreationScadSphere();
+       }
+       if (shape == "cylinder")
+       {
+           param1 = list[1];
+           param2 = list[2];
+           qDebug() << shape << " " << param1 << " " << param2 << endl;
+           CreationScadCylinder();
+       }
+       if (shape == "cale")
+       {
+           qDebug() << shape << endl;
+           CreationScadCale();
+       }
+   }
+}
+
+void Reception::CreationScadCube()
+{
+   numeroI++;
+   numeroS = QString::number(numeroI);
+   nomScad = "test" + numeroS + ".scad";
+
+   QFile file(nomScad);
+   bool existe = file.exists();
+   if (existe == true)
+   {
+       CreationScadCube();
+   }
+   else
+   {
+   if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+       return;
+   QTextStream flux(&file);
+   flux << shape << "([" << param1 << "," << param2 << "," << param3 << "]);" << endl; //cube([param1,param2,param3]);
+   CreationStl();
+   }
+}
+
+void Reception::CreationScadSphere()
+{
+   numeroI++;
+   numeroS = QString::number(numeroI);
+   nomScad = "test" + numeroS + ".scad";
+
+   QFile file(nomScad);
+   bool existe = file.exists();
+   if (existe == true)
+   {
+       CreationScadSphere();
+   }
+   else
+   {
+   if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+       return;
+   QTextStream flux(&file);
+   flux << "$fn = 50;" << endl;
+   flux << shape << "(" << param1 << ");" << endl; //sphere(param1);
+   CreationStl();
+   
+}
+
+void Reception::CreationScadCylinder()
+{
+   numeroI++;
+   numeroS = QString::number(numeroI);
+   nomScad = "test" + numeroS + ".scad";
+
+   QFile file(nomScad);
+   bool existe = file.exists();
+   if (existe == true)
+   {
+       CreationScadCylinder();
+   }
+   else
+   {
+   if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+       return;
+   QTextStream flux(&file);
+   flux << shape << "(h=" << param1 << ",r=" << param2 << ");" << endl; //cylinder(h=param1,r=param2);
+   CreationStl();
+   }
+}
+
+void Reception::CreationScadCale() //non fonctionnelle
+{
+   numeroI++;
+   numeroS = QString::number(numeroI);
+   nomScad = "test" + numeroS + ".scad";
+
+   QFile file(nomScad);
+   bool existe = file.exists();
+   if (existe == true)
+   {
+       CreationScadCale();
+   }
+   else
+   {
+   if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+       return;
+   QTextStream flux(&file);
+   flux << "polygon(points=[[0,0],[2,0],[0,7]]);" << endl;
+   flux << "translate([0,0,1])" << endl;
+   flux << "{" << endl;
+   flux << "polygon(points=[[0,0],[2,0],[0,7]]);" << endl;
+   flux << "}" << endl;
+   flux << "translate([0,0,2])" << endl;
+   flux << "{" << endl;
+   flux << "polygon(points=[[0,0],[2,0],[0,7]]);" << endl;
+   flux << "}" << endl;
+   flux << "translate([0,0,3])" << endl;
+   flux << "{" << endl;
+   flux << "polygon(points=[[0,0],[2,0],[0,7]]);" << endl;
+   flux << "}" << endl;
+   flux << "translate([0,0,4])" << endl;
+   flux << "{" << endl;
+   flux << "polygon(points=[[0,0],[2,0],[0,7]]);" << endl;
+   flux << "}" << endl;
+   CreationStl();
+   }
+}
+
+void Reception::CreationStl()
+{
+   QProcess convertStl; //openscad -o test.stl test.scad
+   QString commande;
+   QStringList args;
+
+   nomStl = "test" + numeroS + ".stl";
+
+   commande = "openscad";
+   args << "-o" << nomStl << nomScad;
+
+   convertStl.start(commande, args, QIODevice::ReadOnly);
+   convertStl.waitForFinished();
+   CreationGCode();
+}
+
+void Reception::CreationGCode()
+{
+   QProcess convertGCode;
+   QString commande;
+   QStringList args;
+   QFile file("config.txt");
+   bool existe = file.exists();
+   commande = "slic3r";
+   if (existe == false)
+   {
+   args << "--nozzle-diameter" << "0.4" << "--filament-diameter" << "1.75" << "--temperature" << "220" << "--bed-temperature" << "0" << "--infill-speed" << "40" << "--travel-speed" << "50" << "--layer-height" << "0.2" << "--first-layer-height" << "0.3" << "--retract-length" << "2" << "--retract-speed" << "20" << "--retract-before-travel" << "0.5" << "--min-fan-speed" << "50" << "--max-fan-speed" << "100" << "--min-print-speed" << "30" << "--perimeter-speed" << "50" << "--external-perimeter-speed" << "30" << "--save" << "config.txt";
+   convertGCode.start(commande, args, QIODevice::ReadOnly);
+   convertGCode.waitForFinished();
+   }
+   //args << "--nozzle-diameter" << "0.4" << "--filament-diameter" << "1.75" << "--temperature" << "220" << "--bed-temperature" << "0" << "--infill-speed" << "40" << "--travel-speed" << "50" << "--layer-height" << "0.2" << "--first-layer-height" << "0.3" << "--retract-length" << "2" << "--retract-speed" << "20" << "--retract-before-travel" << "0.5" << "--min-fan-speed" << "50" << "--max-fan-speed" << "100" << "--min-print-speed" << "30" << "--perimeter-speed" << "50" << "--external-perimeter-speed" << "30" << nomStl;
+   args << "--load" << "config.txt" << nomStl;
+   convertGCode.start(commande, args, QIODevice::ReadOnly);
+   convertGCode.waitForFinished();
+   /*convertGCode.waitForReadyRead();
+   QByteArray test = convertGCode.readAllStandardOutput();
+   qDebug()<< test;*/
+}
+
+
+
