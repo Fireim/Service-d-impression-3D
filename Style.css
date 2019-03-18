@@ -1,0 +1,128 @@
+.triangle.down {
+    border-left: 50px solid transparent;
+	border-right: 50px solid transparent;
+	border-top: 50px solid #46a28d;
+}
+
+.triangle.up {
+	margin-top:635;
+	border-left: 50px solid transparent;
+	border-right: 50px solid transparent;
+	border-bottom: 50px solid #46a28d;
+}
+
+.buttonSubmit {
+	padding: 15px 40px;
+	background: #DDEEFF;
+	color: black;
+	font-weight: bold;
+	font-size: 24px;
+	-webkit-border-radius: 11px;
+	-moz-border-radius: 11px;
+	border-radius: 11px;
+	border: 2px solid black;
+	font-variant: small-caps;
+}
+.buttonSubmit:hover {
+	background: #3C108A;
+	color: #FFFFFF;
+	-webkit-transition: all 0.4s ease-out 0s;
+	-moz-transition: all 0.4s ease-out 0s;
+	transition: all 0.4s ease-out 0s;
+	cursor:pointer;
+}
+
+.global {
+  width:100%;
+  float:center;
+}
+
+.infos {
+	float:left;
+	width:24%;
+	margin-left:80;
+}
+
+#bienvenue {
+	margin-top:140;
+}
+
+.infos > h4 {
+	margin-top:40;
+}
+
+#apercu {
+	margin-top:120;
+}
+
+.formulaire select {
+	font-family: Times New Roman;
+	font-weight: 400;
+	font-size: 24px;
+	margin-left: 0%;
+	width: 99%;
+	height: 100%;
+	border: #CCC 1px solid;
+}
+
+.formulaire select:hover, #formulaire select:focus {
+	border: #999 1px solid;
+	background-color: #DDEEFF;
+	cursor:pointer;
+}
+
+.formulaire input:hover, #formulaire input:focus {
+	border: #999 1px solid;
+	background-color: #DDEEFF;
+}
+
+.cadreInput {
+	width:220px;
+	height:50px;
+	-webkit-border-radius:11px;
+	-moz-border-radius: 11px;
+	border-radius: 5px;
+	border:2px solid #808080;
+	background-color: #FFFFFF;
+}
+
+.cadre {
+	width:270px;
+	height:610;
+	-webkit-border-radius:11px;
+	-moz-border-radius: 11px;
+	border-radius: 5px;
+	border:2px solid #808080;
+	background-color: #46a28d;
+}
+
+.dimensions {
+	width:220px;
+	height:50px;
+	font-size:24px;
+	text-align:center;
+}
+
+h1 {
+	font-family: Arial;
+	font-weight: bold;
+	font-size: 50px;
+}
+h2 {
+	font-family: Times New Roman;
+	font-weight: bold;
+	font-size: 24px;
+}
+h3 {
+	font-family: Times New Roman;
+	font-weight: 600;
+	font-size: 20px;
+	
+}
+h4 {
+	font-family: Times New Roman;
+	font-weight: normal;
+	font-size: 20px;
+}
+
+
